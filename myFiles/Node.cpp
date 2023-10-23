@@ -1,6 +1,8 @@
 #include "Node.h"
 
 Node::Node() {
+    left = NULL;
+    right = NULL;
 }
 
 Node::Node(int b_code, int pg, int para, int s_no, int off){
