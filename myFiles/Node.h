@@ -15,4 +15,6 @@ public:
 
     Node();
     Node(int b_code, int pg, int para, int s_no, int off);
+
+    void display();
 };
