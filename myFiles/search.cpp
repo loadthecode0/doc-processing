@@ -1,361 +1,171 @@
 // Do NOT add any other includes
 #include "search.h"
 
-//implementation of automata
-class _cell {
-    public:
-    int element;
-    _cell *next;
-};
+#define XSIZE   20
+#define ASIZE   256
 
-typedef _cell *List;
-
-class _graph {
-    public:
-    int vertexNumber,
-    edgeNumber,
-    vertexCounter,
-    initial,
-    *terminal,
-    *target,
-    *suffixLink,
-    *length,
-    *position,
-    *shift;
-};
-typedef _graph *Graph; //ie Graph is pointer to _graph; Graph is alias for _graph*
-typedef int boolean;
-
-#define UNDEFINED -1
-/* returns a new data structure for a graph with v vertices and e edges */
-Graph newGraph(int v, int e) {
-    Graph g;
-    g = (Graph)calloc(1, sizeof(struct _graph));
-    if (g == NULL) {throw("newGraph");}
-
-    g->vertexNumber = v;
-    g->edgeNumber = e;
-    g->initial = 0;
-    g->vertexCounter = 1;
-    return(g);
-}
-
-/* returns a new data structure for an automaton with v vertices and e edges */
-Graph newAutomaton(int v, int e) {
-    Graph aut;
-
-    aut = newGraph(v, e);
-    aut->target = (int *)calloc(e, sizeof(int));
-    if (aut->target == NULL) {throw("newAutomaton");}
-    aut->terminal = (int *)calloc(v, sizeof(int));
-    if (aut->terminal == NULL) {throw("newAutomaton");}
-    return(aut);
-}
-
-/* returns a new data structure for a suffix automaton with v vertices and e edges */
-Graph newSuffixAutomaton(int v, int e) {
-    Graph aut;
-
-    aut = newAutomaton(v, e);
-    for (int i = 0; i < e; i++) {
-        aut->target[i] = UNDEFINED;
-    }
-    // memset(aut->target, UNDEFINED, e*sizeof(int));
-    aut->suffixLink = (int *)calloc(v, sizeof(int));
-    if (aut->suffixLink == NULL) {throw("newSuffixAutomaton");}
-    aut->length = (int *)calloc(v, sizeof(int));
-    if (aut->length == NULL) {throw("newSuffixAutomaton");}
-    aut->position = (int *)calloc(v, sizeof(int));
-    if (aut->position == NULL) {throw("newSuffixAutomaton");}
-    aut->shift = (int *)calloc(e, sizeof(int));
-    if (aut->shift == NULL) {throw("newSuffixAutomaton");}
-    return(aut);
-}
-
-
-/* returns a new data structure for a trie with v vertices and e edges */
-Graph newTrie(int v, int e) {
-    Graph aut;
-
-    aut = newAutomaton(v, e);
-    for (int i = 0; i < e; i++) {
-        aut->target[i] = UNDEFINED;
-    }
-    //    memset(aut->target, UNDEFINED, e*sizeof(int));
-    aut->suffixLink = (int *)calloc(v, sizeof(int));
-    if (aut->suffixLink == NULL) {throw("newTrie");}
-    aut->length = (int *)calloc(v, sizeof(int));
-    if (aut->length == NULL) {throw("newTrie");}
-    aut->position = (int *)calloc(v, sizeof(int));
-    if (aut->position == NULL){throw("newTrie");}
-    aut->shift = (int *)calloc(e, sizeof(int));
-    if (aut->shift == NULL) {throw("newTrie");}
-    return(aut);
-}
-
-
-/* returns a new vertex for graph g */
-int newVertex(Graph g) {
-    if (g != NULL && g->vertexCounter <= g->vertexNumber) {
-        return(g->vertexCounter++);}
-    throw("newTrie");
-}
-
-
-/* returns the initial vertex of graph g */
-int getInitial(Graph g) {
-    if (g != NULL)
-        {return(g->initial);}
-    throw("getInitial");
-}
-
-
-/* returns true if vertex v is terminal in graph g */
-boolean isTerminal(Graph g, int v) {
-    if (g != NULL && g->terminal != NULL && v < g->vertexNumber)
-        {return(g->terminal[v]);}
-    throw("isTerminal");
-}
-
-
-/* set vertex v to be terminal in graph g */
-void setTerminal(Graph g, int v) {
-    if (g != NULL && g->terminal != NULL && v < g->vertexNumber)
-        {g->terminal[v] = 1;}
-    else
-        {throw("setTerminal");}
-}
-
-
-/* returns the target of edge from vertex v labelled by character c in graph g */
-int getTarget(Graph g, int v, unsigned char c) {
-    if (g != NULL && g->target != NULL && v < g->vertexNumber && v*c < g->edgeNumber)
-        {return(g->target[v*(g->edgeNumber/g->vertexNumber) +c]);}
-    throw("getTarget");
-}
-
-
-/* add the edge from vertex v to vertex t labelled by character c in graph g */
-void setTarget(Graph g, int v, unsigned char c, int t) {
-    if (g != NULL && g->target != NULL && v < g->vertexNumber && v*c <= g->edgeNumber && t < g->vertexNumber)
-        {g->target[v*(g->edgeNumber/g->vertexNumber) + c] = t;}
-    else
-        {throw("setTarget");}
-}
-
-
-/* returns the suffix link of vertex v in graph g */
-int getSuffixLink(Graph g, int v) {
-    if (g != NULL && g->suffixLink != NULL && v < g->vertexNumber)
-        {return(g->suffixLink[v]);}
-    throw("getSuffixLink");
-}
-
-
-/* set the suffix link of vertex v to vertex s in graph g */
-void setSuffixLink(Graph g, int v, int s) {
-    if (g != NULL && g->suffixLink != NULL && v < g->vertexNumber && s < g->vertexNumber)
-        {g->suffixLink[v] = s;}
-    else
-        {throw("setSuffixLink");}
-}
-
-
-/* returns the length of vertex v in graph g */
-int getLength(Graph g, int v) {
-    if (g != NULL && g->length != NULL && v < g->vertexNumber)
-        {return(g->length[v]);}
-    throw("getLength");
-}
-
-
-/* set the length of vertex v to integer ell in graph g */
-void setLength(Graph g, int v, int ell) {
-    if (g != NULL && g->length != NULL && v < g->vertexNumber)
-        {g->length[v] = ell;}
-    else
-        throw("setLength");
-}
-
-
-/* returns the position of vertex v in graph g */
-int getPosition(Graph g, int v) {
-    if (g != NULL && g->position != NULL && v < g->vertexNumber)
-        {return(g->position[v]);}
-    throw("getPosition");
-}
-
-
-/* set the length of vertex v to integer ell in graph g */
-void setPosition(Graph g, int v, int p) {
-    if (g != NULL && g->position != NULL && v < g->vertexNumber)
-        {g->position[v] = p;}
-    else
-        {throw("setPosition");}
-}
-
-
-/* returns the shift of the edge from vertex v labelled by character c in graph g */
-int getShift(Graph g, int v, unsigned char c) {
-    if (g != NULL && g->shift != NULL && v < g->vertexNumber && v*c < g->edgeNumber)
-        {return(g->shift[v*(g->edgeNumber/g->vertexNumber) + c]);}
-    {throw("getShift");}
-}
-
-
-/* set the shift of the edge from vertex v labelled by character c to integer s in graph g */
-void setShift(Graph g, int v, unsigned char c, int s) {
-    if (g != NULL && g->shift != NULL && v < g->vertexNumber && v*c <= g->edgeNumber)
-        {g->shift[v*(g->edgeNumber/g->vertexNumber) + c] = s;}
-    else
-        {throw("setShift");}
-}
-
-
-/* copies all the characteristics of vertex source to vertex target in graph g */
-void copyVertex(Graph g, int target, int source) {
-    if (g != NULL && target < g->vertexNumber && source < g->vertexNumber) {
-        if (g->target != NULL){
-            for (int i = 0; i < g->edgeNumber / g->vertexNumber; i++) {
-                g->target[target * (g->edgeNumber / g->vertexNumber) + i] = g->target[source * (g->edgeNumber / g->vertexNumber) + i];
-            }
-        }
-            // memcpy(g->target + target*(g->edgeNumber/g->vertexNumber),
-            //     g->target + source*(g->edgeNumber/g->vertexNumber),
-            //     (g->edgeNumber/g->vertexNumber)* sizeof(int));
-        if (g->shift != NULL){
-            for (int i = 0; i < g->edgeNumber / g->vertexNumber; i++) {
-                g->shift[target * (g->edgeNumber / g->vertexNumber) + i] = g->shift[source * (g->edgeNumber / g->vertexNumber) + i];
-            }
-        }
-            // memcpy(g->shift + target*(g->edgeNumber/g->vertexNumber), 
-            //     g->shift + source*(g->edgeNumber/g->vertexNumber),
-            //     (g->edgeNumber/g->vertexNumber)*sizeof(int));
-        if (g->terminal != NULL)
-            {g->terminal[target] = g->terminal[source];}
-        if (g->suffixLink != NULL)
-            {g->suffixLink[target] = g->suffixLink[source];}
-        if (g->length != NULL)
-            {g->length[target] = g->length[source];}
-        if (g->position != NULL)
-            {g->position[target] = g->position[source];}
-    }
-    else {throw("copyVertex");}
-}
-
-void buildSuffixAutomaton(char *x, int m, Graph aut) {
-    int i, art, init, last, p, q, r;
-    char c;
-
-    init = getInitial(aut);
-    art = newVertex(aut);
-    setSuffixLink(aut, init, art);
-    last = init;
-    for (i = 0; i < m; ++i) {
-        c = x[i];
-        p = last;
-        q = newVertex(aut);
-        setLength(aut, q, getLength(aut, p) + 1);
-        setPosition(aut, q, getPosition(aut, p) + 1);
-        while (p != init && getTarget(aut, p, c) == UNDEFINED) {
-            setTarget(aut, p, c, q);
-            setShift(aut, p, c, getPosition(aut, q) - getPosition(aut, p) - 1);
-            p = getSuffixLink(aut, p);
-        }
-        if (getTarget(aut, p, c) == UNDEFINED) {
-            setTarget(aut, init, c, q);
-            setShift(aut, init, c, getPosition(aut, q) - getPosition(aut, init) - 1);
-            setSuffixLink(aut, q, init);
-        }
-        else
-            if (getLength(aut, p) + 1 == getLength(aut, getTarget(aut, p, c))) {
-                setSuffixLink(aut, q, getTarget(aut, p, c));
-            }
-            
-            else {
-                r = newVertex(aut);
-                copyVertex(aut, r, getTarget(aut, p, c));
-                setLength(aut, r, getLength(aut, p) + 1);
-                setSuffixLink(aut, getTarget(aut, p, c), r);
-                setSuffixLink(aut, q, r);
-                while (p != art && getLength(aut, getTarget(aut, p, c)) >= getLength(aut, r)) {
-                    setShift(aut, p, c, getPosition(aut, getTarget(aut, p, c)) -getPosition(aut, p) - 1);
-                    setTarget(aut, p, c, r);
-                    p = getSuffixLink(aut, p);
-                }
-            }
-        last = q;
-    }
-    setTerminal(aut, last);
-    while (last != init) {
-        last = getSuffixLink(aut, last);
-        setTerminal(aut, last);
-    }
-}
-
-void OUTPUT(int book_code, int page, int paragraph, int sentence_no, int k, Node* &curr, int&n_matches, unsigned long&currCharCount) {
-    curr->right = new Node(book_code, page, paragraph, sentence_no, (k+currCharCount));
+void OUTPUT(Info* stringInfo, int k, Node* &curr, int&n_matches) {
+    curr->right = new Node(stringInfo->a, stringInfo->b, stringInfo->c, stringInfo->d, (k));
     curr->right->left = curr;
     curr = curr->right;
     n_matches++;
 }
 
-#define ASIZE 256
+int preColussi(string &pattern, int m, int h[], int next[], int shift[]) {
+    int i, k, nd, q, r, s;
+    int hmax[XSIZE], kmin[XSIZE], nhd0[XSIZE], rmin[XSIZE];
 
-void FDM(int book_code, int page, int paragraph, int sentence_no, string &text, string &pattern, Node* &curr, int&n_matches, unsigned long&currCharCount) {
-    cout << "hello1\n";
-    char t0 = text[0]; char p0 = pattern[0];
-    char*x = &p0; char*y = &t0;
-    int m = pattern.length(); int n = text.length();
+   /* Computation of hmax */
+    i = k = 1;
+    do {
+        while (pattern[i] == pattern[i - k]) {
+            i++;
+        }
+        hmax[k] = i;
+        q = k + 1;
+        while (hmax[q - k] + k < i) {
+            hmax[q] = hmax[q - k] + k;
+            q++;
+        }
+        k = q;
+        if (k == i + 1) {
+            i = k;
+        }
+    } while (k <= m);
 
-    int j, init, ell, state;
-    Graph aut;
-
-   /* Preprocessing */
-    aut = newSuffixAutomaton(2*(m + 2), 2*(m + 2)*ASIZE);
-    buildSuffixAutomaton(x, m, aut);
-    init = getInitial(aut);
-
-    cout << "hello2\n";
-    /* Searching */
-    ell = 0;
-    state = init;
-    for (int j = 0; j < n; ++j) {
-        cout << "hello3\n";
-        if (getTarget(aut, state, y[j]) != UNDEFINED) {
-            cout << "hello4\n";
-            ++ell;
-            state = getTarget(aut, state, y[j]);
+   /* Computation of kmin */
+    // memset(kmin, 0, m*sizeof(int));
+    for (int i = 0; i < m; i++) {
+        kmin[i] = 0;
+    }
+    for (i = m; i >= 1; --i) {
+        if (hmax[i] < m) {
+            kmin[hmax[i]] = i;
+        }
+    }
+   /* Computation of rmin */
+    for (i = m - 1; i >= 0; --i) {
+        if (hmax[i + 1] == m) {
+            r = i + 1;
+        }
+        if (kmin[i] == 0) {
+            rmin[i] = r;
         }
         else {
-            cout << "hello5\n";
-            while (state != init && getTarget(aut, state, y[j]) == UNDEFINED) {
-                cout << "hello6\n";
-                state = getSuffixLink(aut, state);
-                if (getTarget(aut, state, y[j]) != UNDEFINED) {
-                    ell = getLength(aut, state) + 1;
-                    state = getTarget(aut, state, y[j]);
-                }
-                else {
-                    ell = 0;
-                    state = init;
-                }
-                cout << "hello7\n";
-            }   
-            cout << "hello8\n";             
+            rmin[i] = 0;
         }
-        cout << "hello9\n";
-        if (ell == m) {
-            // cout << j - m + 1 << "\n";
-            cout << "hello10\n";
-            OUTPUT(book_code, page, paragraph, sentence_no, j - m + 1, curr, n_matches, currCharCount); 
-            cout << "hello11\n";
-        }
-        cout << "hello12\n";
     }
-    cout << "hello13\n";
+
+   /* Computation of h */
+    s = -1;
+    r = m;
+    for (i = 0; i < m; ++i) {
+        if (kmin[i] == 0){
+            h[--r] = i;
+        }
+        else {
+            h[++s] = i;
+        }
+    }
+    nd = s;
+
+   /* Computation of shift */
+    for (i = 0; i <= nd; ++i) {
+        shift[i] = kmin[h[i]];
+    }
+    for (i = nd + 1; i < m; ++i) {
+        shift[i] = rmin[h[i]];
+    }
+    shift[m] = rmin[0];
+
+   /* Computation of nhd0 */
+    s = 0;
+    for (i = 0; i < m; ++i) {
+        nhd0[i] = s;
+        if (kmin[i] > 0) {
+            ++s;
+        } 
+    }
+
+
+   /* Computation of next */
+    for (i = 0; i <= nd; ++i) {
+        next[i] = nhd0[h[i] - kmin[h[i]]];
+    }
+    for (i = nd + 1; i < m; ++i) {
+        next[i] = nhd0[m - rmin[h[i]]];
+    }
+    next[m] = nhd0[m - rmin[h[m - 1]]];
+
+    return(nd);
 }
 
+void GG(Info* strInfo, string &pattern, Node* &curr, int&n_matches) {
+
+    char t0 = (strInfo->s)[0]; char p0 = pattern[0];
+    char*x = &p0; char*y = &t0;
+    int m = pattern.length(); int n = (strInfo->s).length();
+
+    int i, j, k, ell, last, nd;
+    int h[XSIZE], next[XSIZE], shift[XSIZE];
+    char heavy;
+
+    for (ell = 0; pattern[ell] == pattern[ell + 1]; ell++);
+    if (ell == m - 1) {
+        /* Searching for a power of a single character */
+        for (j = ell = 0; j < n; ++j)
+            if (pattern[0] == (strInfo->s)[j]) {
+                ++ell;
+                if (ell >= m)
+                OUTPUT(strInfo, (j - m+1), curr, n_matches);
+            }
+            else {
+                ell = 0;
+            }
+    } else {
+        /* Preprocessing */
+        nd = preColussi(pattern, m, h, next, shift);
+
+        /* Searching */
+        i = j = heavy = 0;
+        last = -1;
+        while (j <= n - m) {
+            if (heavy && i == 0) {
+                k = last - j + 1;
+                while (pattern[0] == (strInfo->s)[j + k]) {
+                    k++;
+                }
+                if (k <= ell ||pattern[ell + 1] != (strInfo->s)[j + k]) {
+                    i = 0;
+                    j += (k + 1);
+                    last = j - 1;
+                }
+                else {
+                    i = 1;
+                    last = j + k;
+                    j = last - (ell + 1);
+                }
+                heavy = 0;
+            }
+            else {
+                while (i < m && last < j + h[i] && pattern[h[i]] == (strInfo->s)[j + h[i]]) {
+                    ++i;
+                }
+                if (i >= m || last >= j + h[i]) {
+                    OUTPUT(strInfo, j, curr, n_matches);
+                    i = m;
+                }
+                if (i > nd) {
+                    last = j + m - 1;
+                }
+                j += shift[i];
+                i = next[i];
+            }
+            heavy = (j > last ? 0 : 1);
+        }
+    }
+    // cout << "gg DONE inside\n";
+}
 
 
 //=========================================================
@@ -368,53 +178,153 @@ SearchEngine::SearchEngine(){
 
 SearchEngine::~SearchEngine(){
     // Implement your function here  
+    while (allStringsInfo.size() > 0) {
+        Info* temp = allStringsInfo.back();
+        allStringsInfo.pop_back();
+        delete temp; temp = NULL;
+    }
+}
+
+void convertToLowerCase(string &sentence) {
+    for (char &x : sentence) {
+        if (int(x) >= 65 && int(x) <=90) {
+            x = char(int(x) + 32);
+        }
+    }
 }
 
 void SearchEngine::insert_sentence(int book_code, int page, int paragraph, int sentence_no, string sentence){ //checked, works
     // Implement your function here  
-    allStringsInfo.push_back(Info(book_code, page, paragraph, sentence_no, sentence)); 
+    convertToLowerCase(sentence);
+    allStringsInfo.push_back(new Info(book_code, page, paragraph, sentence_no, sentence)); 
     //processing, ie, storing. This function will be called for all sentences before search is used
     return;
 }
 
 Node* SearchEngine::search(string pattern, int& n_matches){
     // Implement your function here  
-    Node* head = new Node();
+    Node* head = new Node(); //empty sentinel, will be deleted if n_matches!= 0 and next will be returned
     Node* curr = head;
-    unsigned long currCharCount = 0;
+    convertToLowerCase(pattern);
+    
 
     for (int i = 0; i < allStringsInfo.size(); i++) {
+        GG(allStringsInfo[i], pattern, curr, n_matches);
 
-        FDM(allStringsInfo[i].a, allStringsInfo[i].b, allStringsInfo[i].c, allStringsInfo[i].d, allStringsInfo[i].s, pattern, curr, n_matches, currCharCount);
-        cout << "FDM DONE\n";
-        currCharCount += allStringsInfo[i].s.length();
-        cout << currCharCount << "\n";
+        // cout << "gg DONE\n";
+        // cout << currCharCount << "\n";
         // cout << curr->left->offset << "\n";
     }
 
     if (n_matches > 0) {
+        Node* temp = head;
+        head = head->right;
+        head->left = NULL;
+        delete temp;
         return head;
     } else {
+        delete head; head = NULL;
         return nullptr;
     }    
 }
 
-int main () {
+// int main () {
 
-    SearchEngine SE;
+//     SearchEngine SE;
 
-    SE.insert_sentence(1, 1, 1, 1, "Hello! This is a test sentence.");
-    SE.insert_sentence(1, 1, 2, 1, "Hello! This is another test sentence.");
+//     SE.insert_sentence(1, 1, 1, 1, "Hello! This is a test sentence.");
+//     SE.insert_sentence(1, 1, 2, 1, "Hello! This is another test sentence.");
 
-    for (Info x: SE.allStringsInfo) {
-        cout << x.a << ", " << x.b << ", " << x.c << ", " << x.d << ", " << x.s << "\n";
-    }
+//     for (Info* x: SE.allStringsInfo) {
+//         cout << x->a << ", " << x->b << ", " << x->c << ", " << x->d << ", " << x->s << "\n";
+//     }
 
-    int x = 0;
+//     int x = 0;
     
-    Node* result = SE.search("test", x);
+//     Node* result = SE.search("test", x);
 
-    cout <<(result == NULL) << "\n";
+//     while (result!=NULL) {
+//         cout << x << " is the val of x\n"; 
+//         result->display();
+//         result = result->right;
+//     }
 
-    return 0;
-}
+
+//     return 0;
+// }
+
+// #define FILENAME "mahatma-gandhi-collected-works-volume-1.txt"
+
+// int main() {
+//     std::ifstream inputFile(FILENAME);
+
+//     if (!inputFile.is_open()) {
+//         std::cerr << "Error: Unable to open the input file." << std::endl;
+//         return 1;
+//     }
+
+//     std::string tuple;
+//     std::string sentence;
+
+//     SearchEngine d;
+
+//     while (std::getline(inputFile, tuple, ')') && std::getline(inputFile, sentence)) {
+//         // Get a line in the sentence
+//         tuple += ')';
+
+//         std::vector<int> metadata;    
+//         std::istringstream iss(tuple);
+
+//         // Temporary variables for parsing
+//         std::string token;
+
+//         // Ignore the first character (the opening parenthesis)
+//         iss.ignore(1);
+
+//         // Parse and convert the elements to integers
+//         while (std::getline(iss, token, ',')) {
+//             // Trim leading and trailing white spaces
+//             size_t start = token.find_first_not_of(" ");
+//             size_t end = token.find_last_not_of(" ");
+//             if (start != std::string::npos && end != std::string::npos) {
+//                 token = token.substr(start, end - start + 1);
+//             }
+            
+//             // Check if the element is a number or a string
+//             if (token[0] == '\'') {
+//                 // Remove the single quotes and convert to integer
+//                 int num = std::stoi(token.substr(1, token.length() - 2));
+//                 metadata.push_back(num);
+//             } else {
+//                 // Convert the element to integer
+//                 int num = std::stoi(token);
+//                 metadata.push_back(num);
+//             }
+//         }
+
+//         // Now we have the string in sentence
+//         // And the other info in metadata
+//         // Add to the dictionary
+
+//         // Insert in the dictionary
+//         d.insert_sentence(metadata[0], metadata[1], metadata[2], metadata[3], sentence);
+//     }
+
+//     inputFile.close();
+
+//     for (Info* x: d.allStringsInfo) {
+//         cout << x->a << ", " << x->b << ", " << x->c << ", " << x->d << ", " << x->s << "\n";
+//     }
+
+//     int x = 0;
+    
+//     Node* result = d.search("talk with him", x);
+
+//     while (result!=NULL) {
+//         cout << x << " is the val of x\n"; 
+//         result->display();
+//         result = result->right;
+//     }
+
+//     return 0;
+// }

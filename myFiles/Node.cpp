@@ -21,5 +21,5 @@ Node::Node(int b_code, int pg, int para, int s_no, int off){
 }
 
 void Node::display() {
-    std::cout << book_code << ", " << page <<  ", " << paragraph << " " << sentence_no << ", " << offset << "\n"; 
+    std::cout << book_code << ", " << page <<  ", " << paragraph << ", " << sentence_no << ", " << offset << "\n"; 
 }
