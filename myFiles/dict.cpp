@@ -1,6 +1,7 @@
 // Do NOT add any other includes
 #include "dict.h"
-
+#include <chrono>
+using namespace std::chrono;
 #include <sstream> //need to remove
 DictNode *findDict(string word, vector<DictNode *> &vec)
 {
@@ -155,6 +156,7 @@ Chaining::Chaining()
     //     i++;
     // }
 }
+
 Chaining::~Chaining()
 {
     // for (int i{0}; i < DictVec.size(); i++)
@@ -358,7 +360,9 @@ void Dict::dump_dictionary(string filename)
 //     std::string sentence;
 
 //     Dict *d = new Dict();
+
 //     // cout << "1" << endl;
+
 //     while (std::getline(inputFile, tuple, ')') && std::getline(inputFile, sentence))
 //     {
 //         // Get a line in the sentence
@@ -411,7 +415,7 @@ void Dict::dump_dictionary(string filename)
 
 //     inputFile.close();
 
-//     d->dump_dictionary("outputCount.txt");
+//     // d->dump_dictionary("outputCount.txt");
 //     // string sentence1 = "Characterisctic, this is Sneha here!";
 //     // string sentence2 = "Characterisctic, this is Aastha here!";
 //     // string sentence3 = "Characterisctic, This is A here!";
@@ -425,6 +429,8 @@ void Dict::dump_dictionary(string filename)
 //     // d.get_word_count("Characterisctic");
 //     // d.get_word_count("Characterisctic");
 //     // d.get_word_count("this");
+
 //     delete d;
+
 //     return 0;
 // }
