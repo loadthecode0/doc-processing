@@ -1,13 +1,23 @@
 // Do NOT add any other includes
 #include "search.h"
 
+//DELETE
+#include <bits/stdc++.h>
+
 #define XSIZE   20
 #define ASIZE   256
 
 void OUTPUT(Info* stringInfo, int k, Node* &curr, int&n_matches) {
-    curr->right = new Node(stringInfo->a, stringInfo->b, stringInfo->c, stringInfo->d, (k));
-    curr->right->left = curr;
-    curr = curr->right;
+
+    if (curr == NULL) {
+        curr = new Node(stringInfo->a, stringInfo->b, stringInfo->c, stringInfo->d, (k));
+        curr->headOfList = curr;
+    } else {
+        curr->right = new Node(stringInfo->a, stringInfo->b, stringInfo->c, stringInfo->d, (k));
+        curr->right->headOfList = curr->headOfList;
+        curr->right->left = curr;
+        curr = curr->right;
+    }    
     n_matches++;
 }
 
@@ -203,29 +213,16 @@ void SearchEngine::insert_sentence(int book_code, int page, int paragraph, int s
 
 Node* SearchEngine::search(string pattern, int& n_matches){
     // Implement your function here  
-    Node* head = new Node(); //empty sentinel, will be deleted if n_matches!= 0 and next will be returned
-    Node* curr = head;
+    // Node* head = new Node(); //empty sentinel, will be deleted if n_matches!= 0 and next will be returned
+    Node* curr = NULL;
     convertToLowerCase(pattern);
     
 
     for (int i = 0; i < allStringsInfo.size(); i++) {
         GG(allStringsInfo[i], pattern, curr, n_matches);
-
-        // cout << "gg DONE\n";
-        // cout << currCharCount << "\n";
-        // cout << curr->left->offset << "\n";
     }
 
-    if (n_matches > 0) {
-        Node* temp = head;
-        head = head->right;
-        head->left = NULL;
-        delete temp;
-        return head;
-    } else {
-        delete head; head = NULL;
-        return nullptr;
-    }    
+    return curr->headOfList;    
 }
 
 // int main () {
@@ -312,18 +309,32 @@ Node* SearchEngine::search(string pattern, int& n_matches){
 
 //     inputFile.close();
 
-//     for (Info* x: d.allStringsInfo) {
-//         cout << x->a << ", " << x->b << ", " << x->c << ", " << x->d << ", " << x->s << "\n";
-//     }
+//     // for (Info* &x: d.allStringsInfo) {
+//     //     cout << x->a << ", " << x->b << ", " << x->c << ", " << x->d << ", " << x->s << "\n";
+//     // }
 
 //     int x = 0;
     
-//     Node* result = d.search("talk with him", x);
+//     Node* result = d.search("and", x);
 
-//     while (result!=NULL) {
+//     Node* dispRes = result;
+
+//     while (dispRes!=NULL) {
 //         cout << x << " is the val of x\n"; 
-//         result->display();
+//         dispRes->display();
+//         dispRes = dispRes->right;
+//     }
+
+    
+
+//     while(result != NULL) {
+//         Node* temp = result;
 //         result = result->right;
+//         delete temp; temp = NULL;
+//     }
+
+//     if (result!=NULL) {
+//         delete result; result = NULL;
 //     }
 
 //     return 0;

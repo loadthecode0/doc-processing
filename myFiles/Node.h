@@ -7,6 +7,8 @@ public:
     Node* left;
     Node* right;
 
+    Node* headOfList;
+
     int book_code;
     int page;
     int paragraph;
@@ -15,6 +17,7 @@ public:
 
     Node();
     Node(int b_code, int pg, int para, int s_no, int off);
+    ~Node();
 
     void display();
 };
