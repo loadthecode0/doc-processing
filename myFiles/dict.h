@@ -8,38 +8,40 @@ class DictNode
 {
 public:
     string key;
-    int wordCount = 0;
-    DictNode *next = NULL;
+    unsigned long wordCount;
+    DictNode *next;
+    DictNode();
+    ~DictNode();
 };
-class LList
-{
-public:
-    DictNode *root;
-    LList();
-    ~LList();
-    void insert(string key);
-    DictNode *search(string &word);
-};
+// class LList
+// {
+// public:
+//     DictNode *root;
+//     LList();
+//     ~LList();
+//     void insert(string key);
+//     DictNode *search(string &word);
+// };
 class Chaining
 {
-public:
-    vector<LList *> DictVec;
-    Chaining();
-    void insert(string word);
-    unsigned long hash(const char *key, uint32_t len, uint32_t seed);
-    DictNode *search(string &word);
-
-    ~Chaining();
-
 private:
     unsigned long siz;
     unsigned long num;
+
+public:
+    vector<vector<DictNode *>> DictVec;
+    Chaining();
+    void insert(string word);
+    unsigned long hash(const string &word, uint32_t len, uint32_t seed);
+    DictNode *search(string &word);
+
+    ~Chaining();
 };
 class Dict
 {
 private:
     // You can add attributes/helper functions here
-    Chaining *DictList;
+    Chaining DictList;
 
 public:
     /* Please do not touch the attributes and

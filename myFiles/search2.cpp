@@ -20,19 +20,19 @@ void preMp(char *x, int m, int mpNext[]) {
 }
 
 
-void OUTPUT(int book_code, int page, int paragraph, int sentence_no, int k, Node* &curr, int&n_matches, unsigned long&currCharCount) {
-    curr->right = new Node(book_code, page, paragraph, sentence_no, (k+currCharCount));
+void OUTPUT(Info* stringInfo, int k, Node* &curr, int&n_matches, unsigned long&currCharCount) {
+    curr->right = new Node(stringInfo->a, stringInfo->b, stringInfo->c, stringInfo->d, (k+currCharCount));
     curr->right->left = curr;
     curr = curr->right;
     n_matches++;
 }
 
 //int book_code, int page, int paragraph, int sentence_no, string &text, string &pattern, Node* &curr, int&n_matches, unsigned long&currCharCount
-void MTKGalilGiancarloSearch(int book_code, int page, int paragraph, int sentence_no, string &text, string &pattern, Node* &curr, int&n_matches, unsigned long&currCharCount) {
+void MTKGalilGiancarloSearch(Info* strInfo, string &pattern, Node* &curr, int&n_matches, unsigned long&currCharCount) {
     
-    char t0 = text[0]; char p0 = pattern[0];
+    char t0 = (strInfo->s)[0]; char p0 = pattern[0];
     char*x = &p0; char*y = &t0;
-    int m = pattern.length(); int n = text.length();
+    int m = pattern.length(); int n = (strInfo->s).length();
 
     cout << *x << " " << m << " " << *y << " " << n << "\n";
 
@@ -40,13 +40,13 @@ void MTKGalilGiancarloSearch(int book_code, int page, int paragraph, int sentenc
 /* Searching */
     for (j = 0; j <= n - m; j++) {
         
-        while (i<m && pattern[i] == text[i + j]) {
-            cout << pattern[i] << " " <<text[i+j] << "\n";
+        while (i<m && pattern[i] == (strInfo->s)[i + j]) {
+            cout << pattern[i] << " " <<(strInfo->s)[i+j] << "\n";
             i++;
         }
         if (i >= m) {
             cout << "j is " << j << "\n";
-            OUTPUT(book_code, page, paragraph, sentence_no, j, curr, n_matches, currCharCount); 
+            OUTPUT(strInfo, j, curr, n_matches, currCharCount); 
             break;
         }   
     }
@@ -63,11 +63,16 @@ SearchEngine::SearchEngine(){
 
 SearchEngine::~SearchEngine(){
     // Implement your function here  
+    while (allStringsInfo.size() > 0) {
+        Info* temp = allStringsInfo.back();
+        allStringsInfo.pop_back();
+        delete temp; temp = NULL;
+    }
 }
 
 void SearchEngine::insert_sentence(int book_code, int page, int paragraph, int sentence_no, string sentence){ //checked, works
     // Implement your function here  
-    allStringsInfo.push_back(Info(book_code, page, paragraph, sentence_no, sentence)); 
+    allStringsInfo.push_back(new Info(book_code, page, paragraph, sentence_no, sentence)); 
     //processing, ie, storing. This function will be called for all sentences before search is used
     return;
 }
@@ -80,10 +85,10 @@ Node* SearchEngine::search(string pattern, int& n_matches){
     
 
     for (int i = 0; i < allStringsInfo.size(); i++) {
-        MTKGalilGiancarloSearch(allStringsInfo[i].a, allStringsInfo[i].b, allStringsInfo[i].c, allStringsInfo[i].d, allStringsInfo[i].s, pattern, curr, n_matches, currCharCount);
+        MTKGalilGiancarloSearch(allStringsInfo[i], pattern, curr, n_matches, currCharCount);
 
         cout << "gg DONE\n";
-        currCharCount += allStringsInfo[i].s.length();
+        currCharCount += (allStringsInfo[i]->s).length();
         cout << currCharCount << "\n";
         cout << curr->left->offset << "\n";
     }
@@ -106,8 +111,8 @@ int main () {
     SE.insert_sentence(1, 1, 1, 1, "Hello! This is a test sentence.");
     SE.insert_sentence(1, 1, 2, 1, "Hello! This is another test sentence.");
 
-    for (Info x: SE.allStringsInfo) {
-        cout << x.a << ", " << x.b << ", " << x.c << ", " << x.d << ", " << x.s << "\n";
+    for (Info* x: SE.allStringsInfo) {
+        cout << x->a << ", " << x->b << ", " << x->c << ", " << x->d << ", " << x->s << "\n";
     }
 
     int x = 0;

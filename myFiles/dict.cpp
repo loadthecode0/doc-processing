@@ -2,29 +2,58 @@
 #include "dict.h"
 
 #include <sstream> //need to remove
+DictNode *findDict(string word, vector<DictNode *> &vec)
+{
+    for (int i{0}; i < vec.size(); i++)
+    {
+        if (vec[i]->key == word)
+        {
+            return vec[i];
+        }
+    }
+    return NULL;
+}
+
 vector<string> splitSentenceIntoWords(const string &sentence)
 {
     vector<string> words;
 
-    string separators = " .,-:!\"\'()?—[];@";
+    string separators = " .,-:!\"\'()?˙[];@";
     int i{0};
-    int j{0};
+    string word = "";
     while (i < sentence.length())
     {
-        for (auto x : separators)
+
+        bool isSep = sentence[i] == ' ' || sentence[i] == '.' || sentence[i] == ',' ||
+                     sentence[i] == '-' || sentence[i] == ':' || sentence[i] == '!' ||
+                     sentence[i] == '\"' || sentence[i] == '\'' || sentence[i] == '(' ||
+                     sentence[i] == ')' || sentence[i] == '?' ||
+                     sentence[i] == '[' || sentence[i] == ']' || sentence[i] == ';' ||
+                     sentence[i] == '@';
+
+        if (!isSep && i != sentence.length() - 1)
         {
-            if (sentence[i] == x)
+            word += sentence[i];
+        }
+        else if (i == sentence.length() - 1)
+        {
+            if (!isSep)
             {
-                string word = "";
-                for (int k{j}; k < i; k++)
-                {
-                    word += sentence[k];
-                }
-                if (word != "")
-                {
-                    words.push_back(word);
-                }
-                j = i + 1;
+                word += sentence[i];
+            }
+
+            if (word != "")
+            {
+                words.push_back(word);
+                word = "";
+            }
+        }
+        else
+        {
+            if (word != "")
+            {
+                words.push_back(word);
+                word = "";
             }
         }
         i++;
@@ -32,67 +61,81 @@ vector<string> splitSentenceIntoWords(const string &sentence)
 
     return words;
 }
-
-LList::LList()
+DictNode::DictNode()
 {
-    root = NULL;
+    key = "";
+    wordCount = 0;
+    next = NULL;
 }
-LList::~LList()
+DictNode::~DictNode()
 {
-    DictNode *temp = root;
-    while (temp != NULL)
-    {
-        DictNode *temp2 = temp->next;
-        delete temp;
-        temp = temp2;
-    }
+    key = "";
+    wordCount = 0;
+    next = NULL;
+    // cout << "node des" << endl;
 }
-void LList::insert(string key)
-{
-    if (root == NULL)
-    {
-        DictNode *newNode = new DictNode();
-        newNode->key = key;
-        newNode->wordCount++;
-        root = newNode;
+// LList::LList()
+// {
+//     root = NULL;
+// }
+// LList::~LList()
+// {
+//     DictNode *temp = root;
+//     while (temp != NULL)
+//     {
+//         DictNode *temp2 = temp->next;
+//         temp->next = NULL;
+//         delete temp;
+//         temp = temp2;
+//     }
+//     cout << "LList destructor called" << endl;
+// }
+// void LList::insert(string key)
+// {
+//     if (root == NULL)
+//     {
+//         DictNode *newNode = new DictNode();
+//         newNode->key = key;
+//         newNode->wordCount++;
+//         root = newNode;
 
-        root->next = NULL;
-    }
-    else
-    {
-        DictNode *temp = root;
-        while (temp->key != key && temp->next != NULL)
-        {
-            temp = temp->next;
-        }
-        if (temp->key == key)
-        {
-            temp->wordCount++;
-        }
-        else
-        {
-            DictNode *newNode = new DictNode();
-            newNode->key = key;
-            newNode->wordCount++;
-            temp->next = newNode;
-        }
-    }
-}
-DictNode *LList::search(string &word)
-{
-    DictNode *temp = this->root;
+//         root->next = NULL;
+//     }
+//     else
+//     {
+//         DictNode *temp = root;
+//         while (temp->key != key && temp->next != NULL)
+//         {
+//             temp = temp->next;
+//         }
+//         if (temp->key == key)
+//         {
+//             temp->wordCount++;
+//         }
+//         else
+//         {
+//             DictNode *newNode = new DictNode();
+//             newNode->key = key;
+//             newNode->wordCount++;
+//             temp->next = newNode;
+//         }
+//     }
+// }
+// DictNode *LList::search(string &word)
+// {
+//     DictNode *temp = this->root;
 
-    while (temp != NULL)
-    {
-        if (temp->key == word)
-        {
-            return temp;
-        }
-        temp = temp->next;
-    }
+//     while (temp != NULL)
+//     {
+//         if (temp->key == word)
+//         {
+//             return temp;
+//         }
+//         temp = temp->next;
+//     }
 
-    return temp;
-}
+//     return temp;
+// }
 
 Chaining::Chaining()
 {
@@ -101,35 +144,69 @@ Chaining::Chaining()
     num = 100000007;
     int i{0};
 
-    while (i < num)
-    {
-        LList *temp = new LList();
-        DictVec.push_back(temp);
-        i++;
-    }
+    // vector<DictNode *> vec; // Set your desired initial value
+
+    DictVec.resize(num);
+    // while (i < num)
+    // {
+    //     // LList *temp = new LList();
+    //     vector<DictNode *> vec;
+    //     DictVec.push_back(vec);
+    //     i++;
+    // }
 }
 Chaining::~Chaining()
 {
-    for (auto vec : DictVec)
+    // for (int i{0}; i < DictVec.size(); i++)
+    // {
+    //     delete DictVec[i];
+    // }
+    for (int i{0}; i < DictVec.size(); i++)
     {
-        delete vec;
+        for (int j{0}; j < DictVec[i].size(); j++)
+        {
+            delete DictVec[i][j];
+        }
     }
+    // cout << "chaining destructor called" << endl;
 }
 void Chaining::insert(string word)
 {
-    char ch = char(word[0]);
-    char *c = &ch;
-    unsigned long hashCode = hash(c, word.size(), 1);
-    DictVec[hashCode]->insert(word);
+
+    unsigned long hashCode = hash(word, word.size(), 1);
+    // cout << "insert hash code " << word << " " << hashCode << endl;
+    if (!DictVec[hashCode].empty())
+    {
+        DictNode *temp = findDict(word, DictVec[hashCode]);
+        if (temp != NULL)
+        {
+            temp->wordCount++;
+        }
+        else
+        {
+            DictNode *newNode = new DictNode();
+            newNode->key = word;
+            newNode->wordCount = 1;
+            DictVec[hashCode].push_back(newNode);
+        }
+    }
+    else
+    {
+        DictNode *newNode = new DictNode();
+        newNode->key = word;
+        newNode->wordCount = 1;
+
+        DictVec[hashCode].push_back(newNode);
+    }
+    // DictVec[hashCode]->insert(word);
 }
 DictNode *Chaining::search(string &word)
 {
-    char ch = char(word[0]);
-    char *c = &ch;
-    unsigned long hashCode = hash(c, word.size(), 1);
-    return DictVec[hashCode]->search(word);
+
+    unsigned long hashCode = hash(word, word.size(), 1);
+    return findDict(word, DictVec[hashCode]);
 }
-unsigned long Chaining::hash(const char *key, uint32_t len, uint32_t seed)
+unsigned long Chaining::hash(const string &word, uint32_t len, uint32_t seed)
 {
     const uint32_t c1 = 0xcc9e2d51;
     const uint32_t c2 = 0x1b873593;
@@ -140,10 +217,9 @@ unsigned long Chaining::hash(const char *key, uint32_t len, uint32_t seed)
 
     uint32_t hash = seed;
     const int nblocks = len / 4;
-    const uint32_t *blocks = (const uint32_t *)key;
-    int i;
+    const uint32_t *blocks = reinterpret_cast<const uint32_t *>(word.c_str());
 
-    for (i = 0; i < nblocks; i++)
+    for (int i = 0; i < nblocks; i++)
     {
         uint32_t k = blocks[i];
         k *= c1;
@@ -154,7 +230,7 @@ unsigned long Chaining::hash(const char *key, uint32_t len, uint32_t seed)
         hash = ((hash << r2) | (hash >> (32 - r2))) * m + n;
     }
 
-    const uint8_t *tail = (const uint8_t *)(key + nblocks * 4);
+    const uint8_t *tail = reinterpret_cast<const uint8_t *>(word.c_str() + nblocks * 4);
     uint32_t k1 = 0;
 
     switch (len & 3)
@@ -178,18 +254,18 @@ unsigned long Chaining::hash(const char *key, uint32_t len, uint32_t seed)
     hash *= 0xc2b2ae35;
     hash ^= (hash >> 16);
 
-    return (unsigned long)hash % num;
+    unsigned long hashValue = static_cast<unsigned long>(hash) % 100000007; // num is set to 100000007
+    return hashValue;
 }
 
 Dict::Dict()
 {
     // Implement your function here
-    DictList = new Chaining();
 }
 
 Dict::~Dict()
 {
-    delete DictList;
+
     // Implement your function here
 }
 
@@ -205,39 +281,41 @@ void Dict::insert_sentence(int book_code, int page, int paragraph, int sentence_
         {
             word += tolower(x);
         }
-        DictList->insert(word);
+        DictList.insert(word);
     }
     return;
 }
 
 int Dict::get_word_count(string word)
 {
-    // string newword = "";
-    // for (auto x : word)
-    // {
-    //     newword += tolower(x);
-    // }
-    // DictNode *node = DictList->DictVec->search(newword);
-    int ans{0};
-    char ch = char(word[0]);
-    char *c = &ch;
-    unsigned long hashCode = DictList->hash(c, word.size(), 1);
-
-    DictNode *temp = DictList->DictVec[hashCode]->root;
-
-    while (temp != NULL)
+    string newword = "";
+    for (auto x : word)
     {
-        cout << temp->key << " " << temp->wordCount << endl;
-        if (temp->key == word)
-        {
-            cout << "entered" << temp->key << " " << word << temp->wordCount << endl;
-            ans = temp->wordCount;
-            break;
-        }
-        temp = temp->next;
+        newword += tolower(x);
+    }
+    // DictNode *node = DictList->DictVec->search(newword);
+
+    // unsigned long hashCode = DictList->hash(newword, newword.size(), 1);
+    //  cout << "hash code in get word " << newword << " " << hashCode << endl;
+    //  DictNode *temp = DictList->DictVec[hashCode]->root;
+    //  unsigned long ans{0};
+    //  while (temp != NULL)
+    //  {
+    //      // cout << temp->key << " " << temp->wordCount << endl;
+    //      if (temp->key == word)
+    //      {
+    //          // cout << "entered" << temp->key << " " << word << temp->wordCount << endl;
+    //          return temp->wordCount;
+    //      }
+    //      temp = temp->next;
+    //  }
+    DictNode *node = DictList.search(newword);
+    if (node != NULL)
+    {
+        return node->wordCount;
     }
 
-    return ans;
+    return -1;
 }
 
 void Dict::dump_dictionary(string filename)
@@ -246,13 +324,18 @@ void Dict::dump_dictionary(string filename)
     ofstream file;
 
     file.open(filename);
-    for (auto list : DictList->DictVec)
+    for (int i{0}; i < DictList.DictVec.size(); i++)
     {
-        DictNode *temp = list->root;
-        while (temp != NULL)
+        // DictNode *temp = DictList->DictVec[i]->root;
+        // while (temp != NULL)
+        // {
+        //     file << temp->key << ", " << this->get_word_count(temp->key) << endl;
+        //     temp = temp->next;
+        // }
+
+        for (int j{0}; j < DictList.DictVec[i].size(); j++)
         {
-            file << temp->key << ", " << this->get_word_count(temp->key) << endl;
-            temp = temp->next;
+            file << DictList.DictVec[i][j]->key << ", " << this->get_word_count(DictList.DictVec[i][j]->key) << endl;
         }
     }
     file.close();
@@ -260,73 +343,88 @@ void Dict::dump_dictionary(string filename)
 }
 #define FILENAME "mahatma-gandhi-collected-works-volume-1.txt"
 
-int main()
-{
+// int main()
+// {
 
-    std::ifstream inputFile(FILENAME);
+//     std::ifstream inputFile(FILENAME);
 
-    if (!inputFile.is_open())
-    {
-        std::cerr << "Error: Unable to open the input file." << std::endl;
-        return 1;
-    }
+//     if (!inputFile.is_open())
+//     {
+//         std::cerr << "Error: Unable to open the input file." << std::endl;
+//         return 1;
+//     }
 
-    std::string tuple;
-    std::string sentence;
+//     std::string tuple;
+//     std::string sentence;
 
-    Dict d;
-    cout << "1" << endl;
-    while (std::getline(inputFile, tuple, ')') && std::getline(inputFile, sentence))
-    {
-        // Get a line in the sentence
-        tuple += ')';
+//     Dict *d = new Dict();
+//     // cout << "1" << endl;
+//     while (std::getline(inputFile, tuple, ')') && std::getline(inputFile, sentence))
+//     {
+//         // Get a line in the sentence
+//         tuple += ')';
 
-        std::vector<int> metadata;
-        std::istringstream iss(tuple);
+//         std::vector<int> metadata;
+//         std::istringstream iss(tuple);
 
-        // Temporary variables for parsing
-        std::string token;
+//         // Temporary variables for parsing
+//         std::string token;
 
-        // Ignore the first character (the opening parenthesis)
-        iss.ignore(1);
+//         // Ignore the first character (the opening parenthesis)
+//         iss.ignore(1);
 
-        // Parse and convert the elements to integers
-        while (std::getline(iss, token, ','))
-        {
+//         // Parse and convert the elements to integers
+//         while (std::getline(iss, token, ','))
+//         {
 
-            // Trim leading and trailing white spaces
-            size_t start = token.find_first_not_of(" ");
-            size_t end = token.find_last_not_of(" ");
-            if (start != std::string::npos && end != std::string::npos)
-            {
-                token = token.substr(start, end - start + 1);
-            }
+//             // Trim leading and trailing white spaces
+//             size_t start = token.find_first_not_of(" ");
+//             size_t end = token.find_last_not_of(" ");
+//             if (start != std::string::npos && end != std::string::npos)
+//             {
+//                 token = token.substr(start, end - start + 1);
+//             }
 
-            // Check if the element is a number or a string
-            if (token[0] == '\'')
-            {
-                // Remove the single quotes and convert to integer
-                int num = std::stoi(token.substr(1, token.length() - 2));
-                metadata.push_back(num);
-            }
-            else
-            {
-                // Convert the element to integer
-                int num = std::stoi(token);
-                metadata.push_back(num);
-            }
-        }
+//             // Check if the element is a number or a string
+//             if (token[0] == '\'')
+//             {
+//                 // Remove the single quotes and convert to integer
+//                 int num = std::stoi(token.substr(1, token.length() - 2));
+//                 metadata.push_back(num);
+//             }
+//             else
+//             {
+//                 // Convert the element to integer
+//                 int num = std::stoi(token);
+//                 metadata.push_back(num);
+//             }
+//         }
 
-        // Now we have the string in sentence
-        // And the other info in metadata
-        // Add to the dictionary
+//         // Now we have the string in sentence
+//         // And the other info in metadata
+//         // Add to the dictionary
 
-        // Insert in the dictionary
+//         // Insert in the dictionary
 
-        d.insert_sentence(metadata[0], metadata[1], metadata[2], metadata[3], sentence);
-    }
+//         d->insert_sentence(metadata[0], metadata[1], metadata[2], metadata[3], sentence);
+//     }
 
-    inputFile.close();
+//     inputFile.close();
 
-    d.dump_dictionary("outputCount.txt");
-}
+//     d->dump_dictionary("outputCount.txt");
+//     // string sentence1 = "Characterisctic, this is Sneha here!";
+//     // string sentence2 = "Characterisctic, this is Aastha here!";
+//     // string sentence3 = "Characterisctic, This is A here!";
+//     // string sentence4 = "Characterisctic, this is B here!";
+//     // Dict d;
+//     // d.insert_sentence(0, 0, 0, 0, sentence1);
+//     // d.insert_sentence(0, 0, 0, 0, sentence2);
+//     // d.insert_sentence(0, 0, 0, 0, sentence3);
+//     // d.insert_sentence(0, 0, 0, 0, sentence4);
+//     // d.get_word_count("Characterisctic");
+//     // d.get_word_count("Characterisctic");
+//     // d.get_word_count("Characterisctic");
+//     // d.get_word_count("this");
+//     delete d;
+//     return 0;
+// }

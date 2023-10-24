@@ -6,7 +6,8 @@
 using namespace std;
 
 
-struct Info {
+class Info {
+public:
     int a, b, c, d;
     string s;
 
@@ -16,6 +17,11 @@ struct Info {
         c = paragraph;
         d = sentence_no;
         s = sentence;
+    }
+
+    ~Info() {
+        a = b = c = d = 0;
+        s = "";
     }
 };
 
@@ -37,5 +43,5 @@ public:
     Node* search(string pattern, int& n_matches);
 
     /* -----------------------------------------*/
-    vector<Info> allStringsInfo = {};
+    vector<Info*> allStringsInfo = {};
 };
