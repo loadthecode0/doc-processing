@@ -28,7 +28,7 @@ public:
 class SearchEngine {
 private:
     // You can add attributes/helper functions here
-    
+    vector<Info*> allStringsInfo = {};
 
 public: 
     /* Please do not touch the attributes and 
@@ -43,5 +43,5 @@ public:
     Node* search(string pattern, int& n_matches);
 
     /* -----------------------------------------*/
-    vector<Info*> allStringsInfo = {};
+    
 };

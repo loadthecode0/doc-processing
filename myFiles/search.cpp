@@ -1,10 +1,6 @@
 // Do NOT add any other includes
 #include "search.h"
 
-//DELETE
-#include <bits/stdc++.h>
-
-// #define XSIZE   20
 #define ASIZE   256
 
 void OUTPUT(Info* stringInfo, int k, Node* &curr, int&n_matches) {
@@ -177,20 +173,15 @@ void GG(Info* strInfo, string &pattern, Node* &curr, int&n_matches) {
             heavy = (j > last ? 0 : 1);
         }
     }
-    // cout << "gg DONE inside\n";
 }
-
 
 //=========================================================
 
 SearchEngine::SearchEngine(){
-    // Implement your function here  
-    
-
+    // Required stuff is pre-initialized
 }
 
 SearchEngine::~SearchEngine(){
-    // Implement your function here  
     while (allStringsInfo.size() > 0) {
         Info* temp = allStringsInfo.back();
         allStringsInfo.pop_back();
@@ -207,7 +198,6 @@ void convertToLowerCase(string &sentence) {
 }
 
 void SearchEngine::insert_sentence(int book_code, int page, int paragraph, int sentence_no, string sentence){ //checked, works
-    // Implement your function here  
     convertToLowerCase(sentence);
     allStringsInfo.push_back(new Info(book_code, page, paragraph, sentence_no, sentence)); 
     //processing, ie, storing. This function will be called for all sentences before search is used
@@ -215,8 +205,6 @@ void SearchEngine::insert_sentence(int book_code, int page, int paragraph, int s
 }
 
 Node* SearchEngine::search(string pattern, int& n_matches){
-    // Implement your function here  
-    // Node* head = new Node(); //empty sentinel, will be deleted if n_matches!= 0 and next will be returned
     Node* curr = NULL;
     convertToLowerCase(pattern);
     
@@ -229,122 +217,5 @@ Node* SearchEngine::search(string pattern, int& n_matches){
         return curr->headOfList;    
     }
 
-    return NULL;
-    
-    
-}
-
-// int main () {
-
-//     SearchEngine SE;
-
-//     SE.insert_sentence(1, 1, 1, 1, "Hello! This is a test sentence.");
-//     SE.insert_sentence(1, 1, 2, 1, "Hello! This is another test sentence.");
-
-//     for (Info* x: SE.allStringsInfo) {
-//         cout << x->a << ", " << x->b << ", " << x->c << ", " << x->d << ", " << x->s << "\n";
-//     }
-
-//     int x = 0;
-    
-//     Node* result = SE.search("test", x);
-
-//     while (result!=NULL) {
-//         cout << x << " is the val of x\n"; 
-//         result->display();
-//         result = result->right;
-//     }
-
-
-//     return 0;
-// }
-
-#define FILENAME "mahatma-gandhi-collected-works-volume-1.txt"
-
-int main() {
-    std::ifstream inputFile(FILENAME);
-
-    if (!inputFile.is_open()) {
-        std::cerr << "Error: Unable to open the input file." << std::endl;
-        return 1;
-    }
-
-    std::string tuple;
-    std::string sentence;
-
-    SearchEngine d;
-
-    while (std::getline(inputFile, tuple, ')') && std::getline(inputFile, sentence)) {
-        // Get a line in the sentence
-        tuple += ')';
-
-        std::vector<int> metadata;    
-        std::istringstream iss(tuple);
-
-        // Temporary variables for parsing
-        std::string token;
-
-        // Ignore the first character (the opening parenthesis)
-        iss.ignore(1);
-
-        // Parse and convert the elements to integers
-        while (std::getline(iss, token, ',')) {
-            // Trim leading and trailing white spaces
-            size_t start = token.find_first_not_of(" ");
-            size_t end = token.find_last_not_of(" ");
-            if (start != std::string::npos && end != std::string::npos) {
-                token = token.substr(start, end - start + 1);
-            }
-            
-            // Check if the element is a number or a string
-            if (token[0] == '\'') {
-                // Remove the single quotes and convert to integer
-                int num = std::stoi(token.substr(1, token.length() - 2));
-                metadata.push_back(num);
-            } else {
-                // Convert the element to integer
-                int num = std::stoi(token);
-                metadata.push_back(num);
-            }
-        }
-
-        // Now we have the string in sentence
-        // And the other info in metadata
-        // Add to the dictionary
-
-        // Insert in the dictionary
-        d.insert_sentence(metadata[0], metadata[1], metadata[2], metadata[3], sentence);
-    }
-
-    inputFile.close();
-
-    // for (Info* &x: d.allStringsInfo) {
-    //     cout << x->a << ", " << x->b << ", " << x->c << ", " << x->d << ", " << x->s << "\n";
-    // }
-
-    int x = 0;
-    
-    Node* result = d.search("erjkbfr3jk", x);
-
-    Node* dispRes = result;
-
-    while (dispRes!=NULL) {
-        cout << x << " is the val of x\n"; 
-        dispRes->display();
-        dispRes = dispRes->right;
-    }
-
-    
-
-    while(result != NULL) {
-        Node* temp = result;
-        result = result->right;
-        delete temp; temp = NULL;
-    }
-
-    if (result!=NULL) {
-        delete result; result = NULL;
-    }
-
-    return 0;
+    return NULL; //if no matches found
 }
