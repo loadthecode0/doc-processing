@@ -7,8 +7,6 @@ public:
     Node* left;
     Node* right;
 
-    Node* headOfList;
-
     int book_code;
     int page;
     int paragraph;

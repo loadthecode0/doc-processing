@@ -1,16 +1,15 @@
 // Do NOT add any other includes
 #include "search.h"
 
-#define ASIZE   256
-
-void OUTPUT(Info* stringInfo, int k, Node* &curr, int&n_matches) {
+void OUTPUT(Info* stringInfo, int k, Node* &curr, Node* &head, int&n_matches) {
 
     if (curr == NULL) {
         curr = new Node(stringInfo->a, stringInfo->b, stringInfo->c, stringInfo->d, (k));
-        curr->headOfList = curr;
+        curr->left = curr->right = NULL;
+        head = curr; //update only if first node is inserted
     } else {
         curr->right = new Node(stringInfo->a, stringInfo->b, stringInfo->c, stringInfo->d, (k));
-        curr->right->headOfList = curr->headOfList;
+        curr->right->right = NULL;
         curr->right->left = curr;
         curr = curr->right;
     }    
@@ -107,7 +106,7 @@ int preColussi(string &pattern, int m, int h[], int next[], int shift[]) {
     return(nd);
 }
 
-void GG(Info* strInfo, string &pattern, Node* &curr, int&n_matches) {
+void GG(Info* strInfo, string &pattern, Node* &curr, Node* &head, int&n_matches) {
 
     char t0 = (strInfo->s)[0]; char p0 = pattern[0];
     char*x = &p0; char*y = &t0;
@@ -126,7 +125,7 @@ void GG(Info* strInfo, string &pattern, Node* &curr, int&n_matches) {
             if (pattern[0] == (strInfo->s)[j]) {
                 ++ell;
                 if (ell >= m)
-                OUTPUT(strInfo, (j - m+1), curr, n_matches);
+                OUTPUT(strInfo, (j - m+1), curr, head, n_matches);
             }
             else {
                 ell = 0;
@@ -161,7 +160,7 @@ void GG(Info* strInfo, string &pattern, Node* &curr, int&n_matches) {
                     ++i;
                 }
                 if (i >= m || last >= j + h[i]) {
-                    OUTPUT(strInfo, j, curr, n_matches);
+                    OUTPUT(strInfo, j, curr, head, n_matches);
                     i = m;
                 }
                 if (i > nd) {
@@ -205,17 +204,14 @@ void SearchEngine::insert_sentence(int book_code, int page, int paragraph, int s
 }
 
 Node* SearchEngine::search(string pattern, int& n_matches){
+    Node* head = NULL;
     Node* curr = NULL;
     convertToLowerCase(pattern);
     
 
     for (int i = 0; i < allStringsInfo.size(); i++) {
-        GG(allStringsInfo[i], pattern, curr, n_matches);
+        GG(allStringsInfo[i], pattern, curr, head, n_matches);
     }
 
-    if (curr!=NULL) {
-        return curr->headOfList;    
-    }
-
-    return NULL; //if no matches found
+    return head; //NULL if no matches found
 }
