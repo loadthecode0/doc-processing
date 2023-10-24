@@ -41,7 +41,7 @@ class Dict
 {
 private:
     // You can add attributes/helper functions here
-    Chaining DictList;
+    Chaining *DictList;
 
 public:
     /* Please do not touch the attributes and
