@@ -1,6 +1,8 @@
 // Do NOT add any other includes
 #include "search.h"
 
+#include<bits/stdc++.h>
+
 void OUTPUT(Info* stringInfo, int k, Node* &curr, Node* &head, int&n_matches) {
 
     if (curr == NULL) {
@@ -112,7 +114,8 @@ void GG(Info* strInfo, string &pattern, Node* &curr, Node* &head, int&n_matches)
     char*x = &p0; char*y = &t0;
     int m = pattern.length(); int n = (strInfo->s).length();
 
-    int XSIZE = m;
+    //FIX THIS
+    int XSIZE = m+1;
 
     int i, j, k, ell, last, nd;
     int h[XSIZE], next[XSIZE], shift[XSIZE];
@@ -215,3 +218,94 @@ Node* SearchEngine::search(string pattern, int& n_matches){
 
     return head; //NULL if no matches found
 }
+
+
+// #define FILENAME "mahatma-gandhi-collected-works-volume-1.txt"
+
+// int main() {
+//     std::ifstream inputFile(FILENAME);
+
+//     if (!inputFile.is_open()) {
+//         std::cerr << "Error: Unable to open the input file." << std::endl;
+//         return 1;
+//     }
+
+//     std::string tuple;
+//     std::string sentence;
+
+//     SearchEngine d;
+
+//     while (std::getline(inputFile, tuple, ')') && std::getline(inputFile, sentence)) {
+//         // Get a line in the sentence
+//         tuple += ')';
+
+//         std::vector<int> metadata;    
+//         std::istringstream iss(tuple);
+
+//         // Temporary variables for parsing
+//         std::string token;
+
+//         // Ignore the first character (the opening parenthesis)
+//         iss.ignore(1);
+
+//         // Parse and convert the elements to integers
+//         while (std::getline(iss, token, ',')) {
+//             // Trim leading and trailing white spaces
+//             size_t start = token.find_first_not_of(" ");
+//             size_t end = token.find_last_not_of(" ");
+//             if (start != std::string::npos && end != std::string::npos) {
+//                 token = token.substr(start, end - start + 1);
+//             }
+            
+//             // Check if the element is a number or a string
+//             if (token[0] == '\'') {
+//                 // Remove the single quotes and convert to integer
+//                 int num = std::stoi(token.substr(1, token.length() - 2));
+//                 metadata.push_back(num);
+//             } else {
+//                 // Convert the element to integer
+//                 int num = std::stoi(token);
+//                 metadata.push_back(num);
+//             }
+//         }
+
+//         // Now we have the string in sentence
+//         // And the other info in metadata
+//         // Add to the dictionary
+
+//         // Insert in the dictionary
+//         d.insert_sentence(metadata[0], metadata[1], metadata[2], metadata[3], sentence);
+//     }
+
+//     inputFile.close();
+
+//     // for (Info* &x: d.allStringsInfo) {
+//     //     cout << x->a << ", " << x->b << ", " << x->c << ", " << x->d << ", " << x->s << "\n";
+//     // }
+
+//     int x = 0;
+    
+//     Node* result = d.search("well", x);
+
+//     Node* dispRes = result;
+
+//     while (dispRes!=NULL) {
+//         cout << x << " is the val of x\n"; 
+//         cout << dispRes->page << " " << dispRes->paragraph<<" " << dispRes->sentence_no << " " << dispRes->offset <<"\n";
+//         dispRes = dispRes->right;
+//     }
+
+    
+
+//     while(result != NULL) {
+//         Node* temp = result;
+//         result = result->right;
+//         delete temp; temp = NULL;
+//     }
+
+//     if (result!=NULL) {
+//         delete result; result = NULL;
+//     }
+
+//     return 0;
+// }
