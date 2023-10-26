@@ -3,6 +3,8 @@
 
 #include<bits/stdc++.h>
 
+#define myInt unsigned long int
+
 void createNode(Info* stringInfo, int k, Node* &curr, Node* &head, int&n_matches) {
 
     if (curr == NULL) {
@@ -18,158 +20,151 @@ void createNode(Info* stringInfo, int k, Node* &curr, Node* &head, int&n_matches
     n_matches++;
 }
 
-int setup(string &pattern, int m, vector<int> &h, vector<int> &next, vector<int> &shift) {
-    int i, k, nd, q, r, s;
-    int XSIZE = m;
-    int hmax[XSIZE], kmin[XSIZE], nhd0[XSIZE], rmin[XSIZE];
+int setup(string &pattern, int m, vector<int> &hVec, vector<int> &nVec, vector<int> &patShiftVec) {
+    int i = 0; int j = 0; 
+    int noHoles = 0; int a, b, c;
+    vector<int> arrH(m+1, 0);
+    vector<int> arrK(m+1, 0);
+    vector<int> smallerNoHoles(m+1, 0);
+    vector<int> arrR(m+1, 0);
 
-   /* Computation of hmax */
-    i = k = 1;
-    do {
-        while (pattern[i] == pattern[i - k]) {
-            i++;
+    i = 1; j = 1;
+    while (j <= m) {
+        while (pattern[i] == pattern[i - j]) {i++;}
+        arrH[j] = i;
+        a = j + 1;
+        while (arrH[a - j] + j < i) {
+            arrH[a] = arrH[a - j] + j;
+            a++;
         }
-        hmax[k] = i;
-        q = k + 1;
-        while (hmax[q - k] + k < i) {
-            hmax[q] = hmax[q - k] + k;
-            q++;
-        }
-        k = q;
-        if (k == i + 1) {
-            i = k;
-        }
-    } while (k <= m);
-
-   /* Computation of kmin */
-    // memset(kmin, 0, m*sizeof(int));
-    for (int i = 0; i < m; i++) {
-        kmin[i] = 0;
-    }
-    for (i = m; i >= 1; --i) {
-        if (hmax[i] < m) {
-            kmin[hmax[i]] = i;
-        }
-    }
-   /* Computation of rmin */
-    for (i = m - 1; i >= 0; --i) {
-        if (hmax[i + 1] == m) {
-            r = i + 1;
-        }
-        if (kmin[i] == 0) {
-            rmin[i] = r;
-        }
-        else {
-            rmin[i] = 0;
+        j = a;
+        if (j == i + 1) {
+            i = j;
         }
     }
 
-   /* Computation of h */
-    s = -1;
-    r = m;
-    for (i = 0; i < m; ++i) {
-        if (kmin[i] == 0){
-            h[--r] = i;
-        }
-        else {
-            h[++s] = i;
+    for (i = m; i >= 1; i--) {
+        if (arrH[i] < m) {
+            arrK[arrH[i]] = i;
         }
     }
-    nd = s;
 
-   /* Computation of shift */
-    for (i = 0; i <= nd; ++i) {
-        shift[i] = kmin[h[i]];
-    }
-    for (i = nd + 1; i < m; ++i) {
-        shift[i] = rmin[h[i]];
-    }
-    shift[m] = rmin[0];
-
-   /* Computation of nhd0 */
-    s = 0;
-    for (i = 0; i < m; ++i) {
-        nhd0[i] = s;
-        if (kmin[i] > 0) {
-            ++s;
+    for (i = m - 1; i >= 0; i--) {
+        if (arrH[i + 1] == m) {
+            b = i + 1;
         } 
+        if (arrK[i] == 0) {
+            arrR[i] = b;
+        } else {
+            arrR[i] = 0;
+        }
     }
 
-
-   /* Computation of next */
-    for (i = 0; i <= nd; ++i) {
-        next[i] = nhd0[h[i] - kmin[h[i]]];
+    c = -1; b = m;
+    for (i = 0; i < m; i++) {
+        if (arrK[i] == 0){
+            hVec[--b] = i;
+        }
+        else {
+            hVec[++c] = i;
+        }
     }
-    for (i = nd + 1; i < m; ++i) {
-        next[i] = nhd0[m - rmin[h[i]]];
-    }
-    next[m] = nhd0[m - rmin[h[m - 1]]];
+    noHoles = c + 1;
 
-    return(nd);
+    for (i = 0; i < noHoles; i++) {
+        patShiftVec[i] = arrK[hVec[i]];
+    }
+    for (i = noHoles; i < m; i++) {
+        patShiftVec[i] = arrR[hVec[i]];
+    }
+
+    patShiftVec[m] = arrR[0];
+
+    c = 0;
+    i = 0;
+    while (i < m) {
+        smallerNoHoles[i] = c;
+        if (arrK[i] > 0) {c++;} 
+        i++;
+    }
+
+    for (i = 0; i < noHoles; ++i) {
+        nVec[i] = smallerNoHoles[hVec[i] - arrK[hVec[i]]];
+    }
+
+    for (i = noHoles; i < m; ++i) {
+        nVec[i] = smallerNoHoles[m - arrR[hVec[i]]];
+    }
+    nVec[m] = smallerNoHoles[m - arrR[hVec[m - 1]]];
+
+    return noHoles;
 }
 
-void GG(Info* strInfo, string &pattern, Node* &curr, Node* &head, int&n_matches) {
+void GalilGiancarlo(Info* strInfo, string &pattern, Node* &curr, Node* &head, int&n_matches) {
 
     int m = pattern.length(); int n = (strInfo->s).length();
 
-    int i, j, k, counter, last, nd;
-    vector<int> h(m+1);
-    vector<int> next(m+1);
-    vector<int> shift(m+1);
-    char heavy;
+    int i = 0; int j = 0; int k = 0; int lBorderIdx = 0; int noHoles = 0;
+    int counter = 0;
+    vector<int> hVec(m+1);
+    vector<int> nVec(m+1);
+    vector<int> patShiftVec(m+1);
+    bool x;
 
-    for (counter = 0; pattern[counter] == pattern[counter + 1]; counter++);
+    while (pattern[counter] == pattern[counter + 1]) {
+        counter++;
+    } //finds repeated power of single char in pattern
+
     if (counter == m - 1) {
-        //single char repeated : GG not applicable
-        for (j = counter = 0; j < n; ++j)
+        //to find whether single char repeated throughout string: GG not applicable
+        counter = 0;
+        for (j = 0; j < n; ++j)
             if (pattern[0] == (strInfo->s)[j]) {
-                ++counter;
+                counter++;
                 if (counter >= m)
-                createNode(strInfo, (j - m+1), curr, head, n_matches);
-            }
-            else {
+                createNode(strInfo, (j - m+1), curr, head, n_matches); //match found
+            } else {
                 counter = 0;
             }
     } else {
-        /* Preprocessing */
-        nd = setup(pattern, m, h, next, shift);
+        //setup : O(m)
+        noHoles = setup(pattern, m, hVec, nVec, patShiftVec);
 
-        /* Searching */
-        i = j = heavy = 0;
-        last = -1;
+        //Search : O(n)
+        i = 0; j = 0; x = 0;
+        lBorderIdx = -1;
         while (j <= n - m) {
-            if (heavy && i == 0) {
-                k = last - j + 1;
-                while (pattern[0] == (strInfo->s)[j + k]) {
-                    k++;
-                }
-                if (k <= counter ||pattern[counter + 1] != (strInfo->s)[j + k]) {
+
+            if (x!=0 && i == 0) {
+                k = lBorderIdx - j + 1;
+                while (pattern[0] == (strInfo->s)[j + k]) {k++;}
+                if (k <= counter || pattern[counter + 1] != (strInfo->s)[j + k]) {
                     i = 0;
-                    j += (k + 1);
-                    last = j - 1;
+                    j += (k + 1); lBorderIdx = j - 1;
                 }
                 else {
                     i = 1;
-                    last = j + k;
-                    j = last - (counter + 1);
+                    lBorderIdx = j + k; j = lBorderIdx - counter + 1;
                 }
-                heavy = 0;
+                x = 0;
             }
+
             else {
-                while (i < m && last < j + h[i] && pattern[h[i]] == (strInfo->s)[j + h[i]]) {
-                    ++i;
+                while (i < m && lBorderIdx < j + hVec[i] && pattern[hVec[i]] == (strInfo->s)[j + hVec[i]]) {
+                    i++;
                 }
-                if (i >= m || last >= j + h[i]) {
-                    createNode(strInfo, j, curr, head, n_matches);
+                if (i >= m || lBorderIdx >= j + hVec[i]) {
+                    createNode(strInfo, j, curr, head, n_matches); //match found
                     i = m;
                 }
-                if (i > nd) {
-                    last = j + m - 1;
+                if (i > noHoles - 1) {
+                    lBorderIdx = j + m - 1;
                 }
-                j += shift[i];
-                i = next[i];
+                j += patShiftVec[i];
+                i = nVec[i];
             }
-            heavy = (j > last ? 0 : 1);
+            if (j>lBorderIdx) {x = 0;} 
+            else {x = 1;}
         }
     }
 }
@@ -210,7 +205,7 @@ Node* SearchEngine::search(string pattern, int& n_matches){
     
 
     for (int i = 0; i < allStringsInfo.size(); i++) {
-        GG(allStringsInfo[i], pattern, curr, head, n_matches);
+        GalilGiancarlo(allStringsInfo[i], pattern, curr, head, n_matches);
     }
 
     return head; //NULL if no matches found
@@ -282,7 +277,7 @@ int main() {
 
     int x = 0;
     
-    Node* result = d.search("to", x);
+    Node* result = d.search("almonds", x);
 
     Node* dispRes = result;
 
