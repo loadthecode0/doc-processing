@@ -3,7 +3,7 @@
 
 #include<bits/stdc++.h>
 
-void OUTPUT(Info* stringInfo, int k, Node* &curr, Node* &head, int&n_matches) {
+void createNode(Info* stringInfo, int k, Node* &curr, Node* &head, int&n_matches) {
 
     if (curr == NULL) {
         curr = new Node(stringInfo->a, stringInfo->b, stringInfo->c, stringInfo->d, (k));
@@ -18,7 +18,7 @@ void OUTPUT(Info* stringInfo, int k, Node* &curr, Node* &head, int&n_matches) {
     n_matches++;
 }
 
-int preColussi(string &pattern, int m, int h[], int next[], int shift[]) {
+int setup(string &pattern, int m, vector<int> &h, vector<int> &next, vector<int> &shift) {
     int i, k, nd, q, r, s;
     int XSIZE = m;
     int hmax[XSIZE], kmin[XSIZE], nhd0[XSIZE], rmin[XSIZE];
@@ -110,32 +110,29 @@ int preColussi(string &pattern, int m, int h[], int next[], int shift[]) {
 
 void GG(Info* strInfo, string &pattern, Node* &curr, Node* &head, int&n_matches) {
 
-    char t0 = (strInfo->s)[0]; char p0 = pattern[0];
-    char*x = &p0; char*y = &t0;
     int m = pattern.length(); int n = (strInfo->s).length();
 
-    //FIX THIS
-    int XSIZE = m+1;
-
-    int i, j, k, ell, last, nd;
-    int h[XSIZE], next[XSIZE], shift[XSIZE];
+    int i, j, k, counter, last, nd;
+    vector<int> h(m+1);
+    vector<int> next(m+1);
+    vector<int> shift(m+1);
     char heavy;
 
-    for (ell = 0; pattern[ell] == pattern[ell + 1]; ell++);
-    if (ell == m - 1) {
-        /* Searching for a power of a single character */
-        for (j = ell = 0; j < n; ++j)
+    for (counter = 0; pattern[counter] == pattern[counter + 1]; counter++);
+    if (counter == m - 1) {
+        //single char repeated : GG not applicable
+        for (j = counter = 0; j < n; ++j)
             if (pattern[0] == (strInfo->s)[j]) {
-                ++ell;
-                if (ell >= m)
-                OUTPUT(strInfo, (j - m+1), curr, head, n_matches);
+                ++counter;
+                if (counter >= m)
+                createNode(strInfo, (j - m+1), curr, head, n_matches);
             }
             else {
-                ell = 0;
+                counter = 0;
             }
     } else {
         /* Preprocessing */
-        nd = preColussi(pattern, m, h, next, shift);
+        nd = setup(pattern, m, h, next, shift);
 
         /* Searching */
         i = j = heavy = 0;
@@ -146,7 +143,7 @@ void GG(Info* strInfo, string &pattern, Node* &curr, Node* &head, int&n_matches)
                 while (pattern[0] == (strInfo->s)[j + k]) {
                     k++;
                 }
-                if (k <= ell ||pattern[ell + 1] != (strInfo->s)[j + k]) {
+                if (k <= counter ||pattern[counter + 1] != (strInfo->s)[j + k]) {
                     i = 0;
                     j += (k + 1);
                     last = j - 1;
@@ -154,7 +151,7 @@ void GG(Info* strInfo, string &pattern, Node* &curr, Node* &head, int&n_matches)
                 else {
                     i = 1;
                     last = j + k;
-                    j = last - (ell + 1);
+                    j = last - (counter + 1);
                 }
                 heavy = 0;
             }
@@ -163,7 +160,7 @@ void GG(Info* strInfo, string &pattern, Node* &curr, Node* &head, int&n_matches)
                     ++i;
                 }
                 if (i >= m || last >= j + h[i]) {
-                    OUTPUT(strInfo, j, curr, head, n_matches);
+                    createNode(strInfo, j, curr, head, n_matches);
                     i = m;
                 }
                 if (i > nd) {
@@ -220,92 +217,92 @@ Node* SearchEngine::search(string pattern, int& n_matches){
 }
 
 
-// #define FILENAME "mahatma-gandhi-collected-works-volume-1.txt"
+#define FILENAME "mahatma-gandhi-collected-works-volume-1.txt"
 
-// int main() {
-//     std::ifstream inputFile(FILENAME);
+int main() {
+    std::ifstream inputFile(FILENAME);
 
-//     if (!inputFile.is_open()) {
-//         std::cerr << "Error: Unable to open the input file." << std::endl;
-//         return 1;
-//     }
+    if (!inputFile.is_open()) {
+        std::cerr << "Error: Unable to open the input file." << std::endl;
+        return 1;
+    }
 
-//     std::string tuple;
-//     std::string sentence;
+    std::string tuple;
+    std::string sentence;
 
-//     SearchEngine d;
+    SearchEngine d;
 
-//     while (std::getline(inputFile, tuple, ')') && std::getline(inputFile, sentence)) {
-//         // Get a line in the sentence
-//         tuple += ')';
+    while (std::getline(inputFile, tuple, ')') && std::getline(inputFile, sentence)) {
+        // Get a line in the sentence
+        tuple += ')';
 
-//         std::vector<int> metadata;    
-//         std::istringstream iss(tuple);
+        std::vector<int> metadata;    
+        std::istringstream iss(tuple);
 
-//         // Temporary variables for parsing
-//         std::string token;
+        // Temporary variables for parsing
+        std::string token;
 
-//         // Ignore the first character (the opening parenthesis)
-//         iss.ignore(1);
+        // Ignore the first character (the opening parenthesis)
+        iss.ignore(1);
 
-//         // Parse and convert the elements to integers
-//         while (std::getline(iss, token, ',')) {
-//             // Trim leading and trailing white spaces
-//             size_t start = token.find_first_not_of(" ");
-//             size_t end = token.find_last_not_of(" ");
-//             if (start != std::string::npos && end != std::string::npos) {
-//                 token = token.substr(start, end - start + 1);
-//             }
+        // Parse and convert the elements to integers
+        while (std::getline(iss, token, ',')) {
+            // Trim leading and trailing white spaces
+            size_t start = token.find_first_not_of(" ");
+            size_t end = token.find_last_not_of(" ");
+            if (start != std::string::npos && end != std::string::npos) {
+                token = token.substr(start, end - start + 1);
+            }
             
-//             // Check if the element is a number or a string
-//             if (token[0] == '\'') {
-//                 // Remove the single quotes and convert to integer
-//                 int num = std::stoi(token.substr(1, token.length() - 2));
-//                 metadata.push_back(num);
-//             } else {
-//                 // Convert the element to integer
-//                 int num = std::stoi(token);
-//                 metadata.push_back(num);
-//             }
-//         }
+            // Check if the element is a number or a string
+            if (token[0] == '\'') {
+                // Remove the single quotes and convert to integer
+                int num = std::stoi(token.substr(1, token.length() - 2));
+                metadata.push_back(num);
+            } else {
+                // Convert the element to integer
+                int num = std::stoi(token);
+                metadata.push_back(num);
+            }
+        }
 
-//         // Now we have the string in sentence
-//         // And the other info in metadata
-//         // Add to the dictionary
+        // Now we have the string in sentence
+        // And the other info in metadata
+        // Add to the dictionary
 
-//         // Insert in the dictionary
-//         d.insert_sentence(metadata[0], metadata[1], metadata[2], metadata[3], sentence);
-//     }
+        // Insert in the dictionary
+        d.insert_sentence(metadata[0], metadata[1], metadata[2], metadata[3], sentence);
+    }
 
-//     inputFile.close();
+    inputFile.close();
 
-//     // for (Info* &x: d.allStringsInfo) {
-//     //     cout << x->a << ", " << x->b << ", " << x->c << ", " << x->d << ", " << x->s << "\n";
-//     // }
+    // for (Info* &x: d.allStringsInfo) {
+    //     cout << x->a << ", " << x->b << ", " << x->c << ", " << x->d << ", " << x->s << "\n";
+    // }
 
-//     int x = 0;
+    int x = 0;
     
-//     Node* result = d.search("well", x);
+    Node* result = d.search("to", x);
 
-//     Node* dispRes = result;
+    Node* dispRes = result;
 
-//     while (dispRes!=NULL) {
-//         cout << x << " is the val of x\n"; 
-//         cout << dispRes->page << " " << dispRes->paragraph<<" " << dispRes->sentence_no << " " << dispRes->offset <<"\n";
-//         dispRes = dispRes->right;
-//     }
+    while (dispRes!=NULL) {
+        cout << x << " is the val of x\n"; 
+        cout << dispRes->page << " " << dispRes->paragraph<<" " << dispRes->sentence_no << " " << dispRes->offset <<"\n";
+        dispRes = dispRes->right;
+    }
 
     
 
-//     while(result != NULL) {
-//         Node* temp = result;
-//         result = result->right;
-//         delete temp; temp = NULL;
-//     }
+    while(result != NULL) {
+        Node* temp = result;
+        result = result->right;
+        delete temp; temp = NULL;
+    }
 
-//     if (result!=NULL) {
-//         delete result; result = NULL;
-//     }
+    if (result!=NULL) {
+        delete result; result = NULL;
+    }
 
-//     return 0;
-// }
+    return 0;
+}
